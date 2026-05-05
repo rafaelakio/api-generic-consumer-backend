@@ -11,6 +11,7 @@ data class ApiRequest(
     val contentType: ContentType,
     val files: List<RequestFile>?,
     val formData: Map<String, String>?,
+    val changeNumber: String?,
 )
 
 enum class HttpMethod { GET, POST, PUT, PATCH, DELETE }
