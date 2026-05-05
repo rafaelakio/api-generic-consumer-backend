@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-consumer-backend-config
+  namespace: api-consumer
+data:
+  AWS_REGION: "us-east-1"
+  AWS_SECRET_NAME_API_CREDENTIALS: "api-consumer/api-credentials"
+  # Comma-separated list of allowed frontend origins (CloudFront domain or custom)
+  CORS_ALLOWED_ORIGINS: "https://your-cloudfront-domain.cloudfront.net"
+  # Azure AD tenant for JWT validation
+  AZURE_TENANT_ID: "your-tenant-id"

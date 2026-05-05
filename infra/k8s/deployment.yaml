@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-consumer-backend
+  namespace: api-consumer
+  labels:
+    app: api-consumer-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api-consumer-backend
+  template:
+    metadata:
+      labels:
+        app: api-consumer-backend
+    spec:
+      serviceAccountName: api-consumer-backend
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      containers:
+        - name: backend
+          image: "${ECR_REPOSITORY_URI}:${IMAGE_TAG}"
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: api-consumer-backend-config
+          env:
+            - name: ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: api-consumer-backend-secrets
+                  key: admin-username
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: api-consumer-backend-secrets
+                  key: admin-password
+            - name: ADMIN_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: api-consumer-backend-secrets
+                  key: admin-jwt-secret
+            - name: NEXTAUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: api-consumer-backend-secrets
+                  key: nextauth-secret
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 15
