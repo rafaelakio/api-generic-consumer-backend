@@ -1,20 +1,300 @@
-# Guia de Contribuição
+# Contributing to API Generic Consumer Backend
 
-Obrigado por considerar contribuir com o API Generic Consumer Backend! 🎉
+Thank you for your interest in contributing to the API Generic Consumer Backend! This document provides comprehensive guidelines to help you contribute effectively in our open source project.
 
-## 📋 Índice
+## Table of Contents
 
-- [Código de Conduta](#código-de-conduta)
-- [Como Posso Contribuir?](#como-posso-contribuir)
-- [Processo de Desenvolvimento](#processo-de-desenvolvimento)
-- [Padrões de Código](#padrões-de-código)
-- [Padrões de Commit](#padrões-de-commit)
-- [Pull Requests](#pull-requests)
-- [Testes](#testes)
+- [Code of Conduct](#code-of-conduct)
+- [Getting Started](#getting-started)
+- [Development Workflow](#development-workflow)
+- [Coding Standards](#coding-standards)
+- [Testing Guidelines](#testing-guidelines)
+- [Documentation](#documentation)
+- [Pull Request Process](#pull-request-process)
+- [Issue Reporting](#issue-reporting)
+- [Security](#security)
 
-## 📜 Código de Conduta
+## Code of Conduct
 
-Este projeto adere ao [Código de Conduta](CODE_OF_CONDUCT.md). Ao participar, você concorda em manter este código.
+This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). Please read and follow it in all your interactions with the project.
+
+## Getting Started
+
+### Prerequisites
+
+- Java 21 or higher
+- Docker and Docker Compose
+- Git
+- IDE (IntelliJ IDEA recommended)
+
+### Setup
+
+1. Fork the repository
+2. Clone your fork:
+   ```bash
+   git clone https://github.com/your-username/api-generic-consumer-backend.git
+   cd api-generic-consumer-backend
+   ```
+3. Add the original repository as upstream:
+   ```bash
+   git remote add upstream https://github.com/original-owner/api-generic-consumer-backend.git
+   ```
+4. Create a feature branch:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+## Development Workflow
+
+We follow the GitFlow branching model:
+
+### Branch Structure
+
+- `main`: Production-ready code
+- `develop`: Integration branch for features
+- `feature/*`: New features
+- `release/*`: Release preparation
+- `hotfix/*`: Critical fixes
+
+### Workflow
+
+1. **Create Feature Branch**
+   ```bash
+   git checkout develop
+   git pull upstream develop
+   git checkout -b feature/your-feature-name
+   ```
+
+2. **Develop and Test**
+   - Write code following our coding standards
+   - Add comprehensive tests
+   - Ensure all tests pass
+
+3. **Commit Changes**
+   ```bash
+   git add .
+   git commit -m "feat: add your feature description"
+   ```
+
+4. **Push and Create PR**
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+
+## Coding Standards
+
+### Kotlin Guidelines
+
+- Follow [Kotlin coding conventions](https://kotlinlang.org/docs/coding-conventions.html)
+- Use meaningful variable and function names
+- Keep functions small and focused
+- Add KDoc comments for public APIs
+
+### Code Style
+
+```kotlin
+// Good
+class UserService(
+    private val userRepository: UserRepository
+) {
+    fun createUser(request: CreateUserRequest): User {
+        return userRepository.save(request.toUser())
+    }
+}
+
+// Bad
+class UserService(var ur: UserRepository) {
+    fun create(req: CreateUserRequest): User {
+        return ur.save(req.toUser())
+    }
+}
+```
+
+### Architecture Guidelines
+
+- Follow hexagonal architecture
+- Use dependency injection
+- Keep business logic in use cases
+- Separate concerns properly
+
+## Testing Guidelines
+
+### Test Structure
+
+```
+src/test/kotlin/
+├── unit/           # Unit tests
+├── integration/    # Integration tests
+└── e2e/           # End-to-end tests
+```
+
+### Writing Tests
+
+```kotlin
+@ExtendWith(MockitoExtension::class)
+class UserServiceTest {
+    
+    @Mock
+    private lateinit var userRepository: UserRepository
+    
+    @InjectMocks
+    private lateinit var userService: UserService
+    
+    @Test
+    fun `should create user successfully`() {
+        // Given
+        val request = CreateUserRequest(name = "John Doe")
+        val expectedUser = User(id = 1, name = "John Doe")
+        `when`(userRepository.save(any())).thenReturn(expectedUser)
+        
+        // When
+        val result = userService.createUser(request)
+        
+        // Then
+        assertEquals(expectedUser, result)
+        verify(userRepository).save(any())
+    }
+}
+```
+
+### Test Coverage
+
+- Maintain minimum 80% code coverage
+- Write tests for critical business logic
+- Test edge cases and error scenarios
+
+## Documentation
+
+### Code Documentation
+
+- Add KDoc for all public classes and functions
+- Document complex business logic
+- Include examples in documentation
+
+### README Updates
+
+Update README.md for:
+- New features
+- Configuration changes
+- API modifications
+- Setup instructions
+
+## Pull Request Process
+
+### Before Submitting
+
+1. **Code Quality**
+   - [ ] Code follows style guidelines
+   - [ ] Tests pass locally
+   - [ ] Documentation is updated
+   - [ ] No sensitive data in code
+
+2. **Testing**
+   - [ ] Unit tests written
+   - [ ] Integration tests pass
+   - [ ] Manual testing completed
+
+3. **Security**
+   - [ ] No hardcoded secrets
+   - [ ] Input validation implemented
+   - [ ] Authentication/authorization considered
+
+### PR Template
+
+```markdown
+## Description
+Brief description of changes
+
+## Type of Change
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Breaking change
+- [ ] Documentation update
+
+## Testing
+- [ ] Unit tests pass
+- [ ] Integration tests pass
+- [ ] Manual testing completed
+
+## Checklist
+- [ ] Code follows style guidelines
+- [ ] Self-review completed
+- [ ] Documentation updated
+- [ ] No breaking changes (or documented)
+```
+
+### Review Process
+
+1. Automated checks must pass
+2. At least one maintainer approval required
+3. Address all review comments
+4. Maintain clean commit history
+
+## Issue Reporting
+
+### Bug Reports
+
+Use the following template for bug reports:
+
+```markdown
+**Bug Description**
+Clear description of the bug
+
+**Steps to Reproduce**
+1. Step 1
+2. Step 2
+3. Step 3
+
+**Expected Behavior**
+What should happen
+
+**Actual Behavior**
+What actually happens
+
+**Environment**
+- OS: [e.g., Windows 10, macOS 12.0]
+- Java Version: [e.g., 21.0.1]
+- Browser: [if applicable]
+
+**Additional Context**
+Any other relevant information
+```
+
+### Feature Requests
+
+```markdown
+**Feature Description**
+Clear description of the feature
+
+**Problem Statement**
+What problem does this solve?
+
+**Proposed Solution**
+How should this be implemented?
+
+**Alternatives Considered**
+Other approaches you thought about
+
+**Additional Context**
+Any other relevant information
+```
+
+## Security
+
+If you discover a security vulnerability, please report it privately to:
+
+- Email: security@example.com
+- Do not open a public issue
+
+## Getting Help
+
+- Check existing issues and documentation
+- Join our [Discord community](https://discord.gg/example)
+- Create an issue for questions
+
+## License
+
+By contributing, you agree that your contributions will be licensed under the [MIT License](LICENSE).
 
 ## 🤝 Como Posso Contribuir?
 
