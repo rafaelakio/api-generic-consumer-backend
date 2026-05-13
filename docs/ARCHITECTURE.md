@@ -147,7 +147,82 @@ infrastructure/
 
 ## 🔄 Fluxo de Dados
 
-### 1. Requisição de Proxy
+### 1. Fluxo Completo com API Gateway
+
+```mermaid
+sequenceDiagram
+    participant Frontend as Frontend<br/>(Next.js)
+    participant APIGateway as API Gateway<br/>(AWS/LocalStack)
+    participant Controller as Backend Controller<br/>(Spring Boot)
+    participant ProxyService as Proxy Service
+    participant SecretsAdapter as Secrets Adapter
+    participant TokenAdapter as OAuth Token Adapter
+    participant HttpAdapter as HTTP Client Adapter
+    participant ExternalAPI as External API
+    participant AuditService as Audit Service
+    participant DynamoDB as DynamoDB
+
+    Note over Frontend,DynamoDB: 📝 Logging em cada etapa
+
+    Frontend->>Frontend: LOG: Iniciando requisição
+    Frontend->>APIGateway: POST /api/proxy<br/>(HTTPS + Auth Token)
+    Note right of Frontend: Log: Request enviado<br/>Timestamp, URL, Headers
+    
+    APIGateway->>APIGateway: LOG: Request recebido
+    APIGateway->>APIGateway: Validar autenticação
+    APIGateway->>Controller: Forward request
+    Note right of APIGateway: Log: Request validado<br/>e encaminhado
+    
+    Controller->>Controller: LOG: Request recebido no backend
+    Controller->>ProxyService: execute(request)
+    Note right of Controller: Log: Iniciando processamento<br/>ChangeNumber, Method, URL
+    
+    ProxyService->>ProxyService: LOG: Buscando credenciais
+    ProxyService->>SecretsAdapter: getCredentials()
+    SecretsAdapter->>SecretsAdapter: LOG: Consultando Secrets Manager
+    SecretsAdapter-->>ProxyService: credentials
+    Note right of SecretsAdapter: Log: Credenciais obtidas
+    
+    ProxyService->>ProxyService: LOG: Obtendo token OAuth
+    ProxyService->>TokenAdapter: getToken(credentials)
+    TokenAdapter->>TokenAdapter: LOG: Requisitando token
+    TokenAdapter->>ExternalAPI: POST /oauth/token
+    ExternalAPI-->>TokenAdapter: access_token
+    TokenAdapter-->>ProxyService: accessToken
+    Note right of TokenAdapter: Log: Token obtido<br/>Expiration time
+    
+    ProxyService->>ProxyService: LOG: Executando requisição externa
+    ProxyService->>HttpAdapter: execute(request + token)
+    HttpAdapter->>HttpAdapter: LOG: Preparando HTTP request
+    HttpAdapter->>ExternalAPI: HTTP Request<br/>(com Bearer Token)
+    Note right of HttpAdapter: Log: Request enviado<br/>URL, Method, Headers
+    
+    ExternalAPI-->>HttpAdapter: HTTP Response
+    HttpAdapter->>HttpAdapter: LOG: Response recebido
+    HttpAdapter-->>ProxyService: response
+    Note right of HttpAdapter: Log: Status, Body size,<br/>Response time
+    
+    ProxyService->>ProxyService: LOG: Gravando auditoria
+    ProxyService->>AuditService: write(auditLog)
+    AuditService->>AuditService: LOG: Preparando entrada de auditoria
+    AuditService->>DynamoDB: save(log)
+    DynamoDB-->>AuditService: success
+    Note right of AuditService: Log: Auditoria gravada<br/>ChangeNumber, Timestamp
+    
+    ProxyService-->>Controller: response
+    Controller->>Controller: LOG: Response preparado
+    Controller-->>APIGateway: HTTP Response
+    Note right of Controller: Log: Response enviado<br/>Status, Duration
+    
+    APIGateway->>APIGateway: LOG: Response processado
+    APIGateway-->>Frontend: HTTP Response
+    Note right of APIGateway: Log: Response retornado<br/>ao cliente
+    
+    Frontend->>Frontend: LOG: Response recebido
+    Note right of Frontend: Log: Status, Data,<br/>Total duration
+```
+
+### 2. Requisição de Proxy (Detalhado)
 
 ```mermaid
 sequenceDiagram

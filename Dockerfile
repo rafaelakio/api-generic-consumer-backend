@@ -1,10 +1,20 @@
 FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /app
-COPY gradlew settings.gradle.kts build.gradle.kts ./
-COPY gradle ./gradle
-RUN ./gradlew dependencies --no-daemon -q
+
+# Install Gradle
+RUN apk add --no-cache gradle
+
+# Copy build files first (better layer caching)
+COPY settings.gradle.kts build.gradle.kts ./
+
+# Download dependencies
+RUN gradle dependencies --no-daemon -q || echo "Dependencies download completed"
+
+# Copy source code
 COPY src ./src
-RUN ./gradlew bootJar --no-daemon -q
+
+# Build the application
+RUN gradle bootJar --no-daemon -q
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app

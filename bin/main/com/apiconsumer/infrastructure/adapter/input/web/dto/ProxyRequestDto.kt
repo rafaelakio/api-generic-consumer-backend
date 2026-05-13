@@ -18,6 +18,7 @@ data class ProxyRequestDto(
     val contentType: String = "json",
     val files: List<FileDto>? = null,
     val formData: Map<String, String>? = null,
+    val changeNumber: String? = null,
 ) {
     fun toDomain() = ApiRequest(
         url = url,
@@ -35,6 +36,7 @@ data class ProxyRequestDto(
         },
         files = files?.map { it.toDomain() },
         formData = formData,
+        changeNumber = changeNumber?.ifBlank { null },
     )
 }
 

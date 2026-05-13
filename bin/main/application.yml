@@ -27,6 +27,11 @@ app:
     password: ${ADMIN_PASSWORD:admin}
     jwt-secret: ${ADMIN_JWT_SECRET:change-me-in-production-use-256-bit-key}
     jwt-expiration-ms: ${ADMIN_JWT_EXPIRATION_MS:86400000}
+  servicenow:
+    enabled: ${SERVICENOW_ENABLED:false}
+    base-url: ${SERVICENOW_BASE_URL:}
+    username: ${SERVICENOW_USERNAME:}
+    password: ${SERVICENOW_PASSWORD:}
 
 management:
   endpoints:
